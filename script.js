@@ -2054,16 +2054,36 @@ class SisRealDriver {
             this.gerarRelatorios();
         });
 
-        // Configurar relatório semanal por motorista
-        this.setupRelatorioSemanal();
+        // Configurar relatório semanal por motorista (aguardar um pouco para garantir que os dados foram carregados)
+        setTimeout(() => {
+            this.setupRelatorioSemanal();
+        }, 100);
     }
 
     setupRelatorioSemanal() {
+        console.log('🔧 Configurando relatório semanal...');
+        console.log('📊 Motoristas disponíveis:', this.data.motoristas.length);
+        console.log('📋 Contratos disponíveis:', this.data.contratos.length);
+        
         // Popular select de motoristas
         const selectMotorista = document.getElementById('relatorio-motorista-semanal');
         selectMotorista.innerHTML = '<option value="">Selecione um motorista</option>';
         
+        if (this.data.motoristas.length === 0) {
+            console.log('⚠️ Nenhum motorista encontrado');
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Nenhum motorista cadastrado';
+            option.disabled = true;
+            selectMotorista.appendChild(option);
+            
+            // Verificar se há dados de exemplo para criar
+            this.verificarECriarDadosExemplo();
+            return;
+        }
+        
         this.data.motoristas.forEach(motorista => {
+            console.log(`👤 Adicionando motorista: ${motorista.nome} (ID: ${motorista.id})`);
             const option = document.createElement('option');
             option.value = motorista.id;
             option.textContent = motorista.nome;
@@ -2084,7 +2104,12 @@ class SisRealDriver {
         const motoristaId = document.getElementById('relatorio-motorista-semanal').value;
         const semanaFiltro = document.getElementById('relatorio-semana-semanal').value;
         
+        console.log('🔄 Atualizando relatório semanal...');
+        console.log('👤 Motorista ID selecionado:', motoristaId);
+        console.log('📅 Filtro de semana:', semanaFiltro);
+        
         if (!motoristaId) {
+            console.log('⚠️ Nenhum motorista selecionado');
             document.getElementById('relatorio-semanal-motorista').innerHTML = 
                 '<div class="empty-detail">Selecione um motorista para ver o resumo semanal</div>';
             return;
@@ -2093,13 +2118,18 @@ class SisRealDriver {
         const dataInicio = document.getElementById('relatorio-data-inicio').value;
         const dataFim = document.getElementById('relatorio-data-fim').value;
         
+        console.log('📅 Período selecionado:', dataInicio, 'até', dataFim);
+        
         const relatorio = this.gerarRelatorioSemanalMotorista(motoristaId, dataInicio, dataFim);
         
         if (!relatorio) {
+            console.log('❌ Relatório não gerado - motorista não encontrado ou sem contratos');
             document.getElementById('relatorio-semanal-motorista').innerHTML = 
-                '<div class="empty-detail">Motorista não encontrado</div>';
+                '<div class="empty-detail">Motorista não encontrado ou sem contratos cadastrados</div>';
             return;
         }
+        
+        console.log('✅ Relatório gerado com sucesso:', relatorio);
 
         // Filtrar semanas se necessário
         let semanasParaExibir = relatorio.semanas;
@@ -2192,6 +2222,99 @@ class SisRealDriver {
         container.innerHTML = html;
     }
 
+    verificarECriarDadosExemplo() {
+        console.log('🔍 Verificando se há dados de exemplo...');
+        
+        // Verificar se já existem dados
+        if (this.data.motoristas.length > 0 || this.data.contratos.length > 0) {
+            console.log('✅ Dados já existem, não criando exemplos');
+            return;
+        }
+        
+        console.log('📝 Criando dados de exemplo para demonstração...');
+        
+        // Criar motorista de exemplo
+        const motoristaExemplo = {
+            id: 1,
+            nome: 'João Silva',
+            cpf: '123.456.789-00',
+            telefone: '(11) 99999-9999',
+            endereco: 'Rua das Flores, 123',
+            dataCadastro: new Date().toISOString().split('T')[0]
+        };
+        
+        // Criar veículo de exemplo
+        const veiculoExemplo = {
+            id: 1,
+            marca: 'Chevrolet',
+            modelo: 'Agile',
+            placa: 'ABC-1234',
+            ano: 2020,
+            cor: 'Branco',
+            status: 'Ativo',
+            dataCadastro: new Date().toISOString().split('T')[0]
+        };
+        
+        // Criar contrato de exemplo
+        const contratoExemplo = {
+            id: 1,
+            motoristaId: 1,
+            veiculoId: 1,
+            dataInicio: '2024-10-14',
+            dataVencimento: '2025-10-14',
+            duracao: 365,
+            valorMensal: 2000,
+            valorSemanal: 500,
+            valorDiario: 100,
+            status: 'Ativo',
+            observacoes: 'Contrato de exemplo'
+        };
+        
+        // Criar diárias de exemplo
+        const diariasExemplo = [
+            {
+                id: 1,
+                motoristaId: 1,
+                veiculoId: 1,
+                data: '2024-10-15',
+                valor: 100,
+                status: 'Pago'
+            },
+            {
+                id: 2,
+                motoristaId: 1,
+                veiculoId: 1,
+                data: '2024-10-16',
+                valor: 100,
+                status: 'Pago'
+            },
+            {
+                id: 3,
+                motoristaId: 1,
+                veiculoId: 1,
+                data: '2024-10-17',
+                valor: 100,
+                status: 'Pendente'
+            }
+        ];
+        
+        // Adicionar aos dados
+        this.data.motoristas.push(motoristaExemplo);
+        this.data.veiculos.push(veiculoExemplo);
+        this.data.contratos.push(contratoExemplo);
+        this.data.diarias.push(...diariasExemplo);
+        
+        // Salvar dados
+        this.saveData();
+        
+        console.log('✅ Dados de exemplo criados com sucesso');
+        
+        // Recarregar o setup do relatório semanal
+        setTimeout(() => {
+            this.setupRelatorioSemanal();
+        }, 100);
+    }
+
     definirPeriodoCompleto() {
         const periodo = this.detectarPeriodoComDados();
         document.getElementById('relatorio-data-inicio').value = periodo.dataInicio;
@@ -2202,9 +2325,16 @@ class SisRealDriver {
 
     // Função para calcular as semanas de um motorista baseado na data de início do contrato
     calcularSemanasMotorista(motoristaId) {
+        console.log('📅 Calculando semanas para motorista ID:', motoristaId);
+        
         // Encontrar o contrato mais antigo do motorista
         const contratosMotorista = this.data.contratos.filter(c => c.motoristaId === motoristaId);
-        if (contratosMotorista.length === 0) return [];
+        console.log('📋 Contratos encontrados para o motorista:', contratosMotorista.length);
+        
+        if (contratosMotorista.length === 0) {
+            console.log('⚠️ Nenhum contrato encontrado para o motorista');
+            return [];
+        }
 
         // Ordenar por data de início e pegar o mais antigo
         const contratoInicial = contratosMotorista.sort((a, b) => new Date(a.dataInicio) - new Date(b.dataInicio))[0];
@@ -2241,8 +2371,16 @@ class SisRealDriver {
 
     // Função para gerar relatório semanal por motorista
     gerarRelatorioSemanalMotorista(motoristaId, semanaInicio, semanaFim) {
+        console.log('🔍 Gerando relatório semanal para motorista ID:', motoristaId);
+        
         const motorista = this.data.motoristas.find(m => m.id === motoristaId);
-        if (!motorista) return null;
+        if (!motorista) {
+            console.log('❌ Motorista não encontrado com ID:', motoristaId);
+            console.log('📊 Motoristas disponíveis:', this.data.motoristas.map(m => ({ id: m.id, nome: m.nome })));
+            return null;
+        }
+        
+        console.log('✅ Motorista encontrado:', motorista.nome);
 
         const semanas = this.calcularSemanasMotorista(motoristaId);
         const semanasFiltradas = semanas.filter(semana => {
