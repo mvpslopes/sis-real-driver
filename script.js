@@ -2086,9 +2086,10 @@ class SisRealDriver {
             option.disabled = true;
             selectMotorista.appendChild(option);
             
-            // Forçar criação de dados de exemplo
-            console.log('🔧 Forçando criação de dados de exemplo...');
-            this.criarDadosExemploForcado();
+            // Mostrar mensagem mais clara
+            document.getElementById('relatorio-semanal-motorista').innerHTML = 
+                '<div class="empty-detail">Nenhum motorista cadastrado. Cadastre motoristas na aba "Motoristas" primeiro.</div>';
+            
             return;
         }
         
@@ -2099,6 +2100,25 @@ class SisRealDriver {
             option.textContent = motorista.nome;
             selectMotorista.appendChild(option);
         });
+        
+        // Mostrar informações sobre os dados reais
+        console.log('📊 Dados reais encontrados:');
+        console.log('- Motoristas:', this.data.motoristas.length);
+        console.log('- Contratos:', this.data.contratos.length);
+        console.log('- Veículos:', this.data.veiculos.length);
+        console.log('- Diárias:', this.data.diarias.length);
+        
+        // Verificar se há contratos para os motoristas
+        const motoristasComContratos = this.data.motoristas.filter(motorista => 
+            this.data.contratos.some(contrato => contrato.motoristaId === motorista.id)
+        );
+        
+        console.log('📋 Motoristas com contratos:', motoristasComContratos.length);
+        
+        if (motoristasComContratos.length === 0) {
+            document.getElementById('relatorio-semanal-motorista').innerHTML = 
+                '<div class="empty-detail">Motoristas cadastrados, mas nenhum contrato encontrado. Cadastre contratos na aba "Contratos" primeiro.</div>';
+        }
 
         // Event listeners
         selectMotorista.addEventListener('change', () => {
@@ -2335,6 +2355,20 @@ class SisRealDriver {
     // Função para forçar criação de dados de exemplo
     criarDadosExemploForcado() {
         console.log('🔧 Forçando criação de dados de exemplo...');
+        console.log('📊 Estado atual dos dados REAIS:');
+        console.log('- Motoristas reais:', this.data.motoristas.length);
+        console.log('- Contratos reais:', this.data.contratos.length);
+        console.log('- Veículos reais:', this.data.veiculos.length);
+        console.log('- Diárias reais:', this.data.diarias.length);
+        
+        // Se já existem dados reais, não criar fictícios
+        if (this.data.motoristas.length > 0 || this.data.contratos.length > 0) {
+            console.log('✅ Dados reais já existem! Recarregando relatório...');
+            this.setupRelatorioSemanal();
+            return;
+        }
+        
+        console.log('⚠️ Nenhum dado real encontrado, criando dados de exemplo...');
         
         // Limpar dados existentes se necessário
         this.data.motoristas = [];
