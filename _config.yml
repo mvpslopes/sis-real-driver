@@ -1,0 +1,16 @@
+# GitHub Pages Configuration
+title: Sistema Real Driver
+description: Sistema completo de gestão para empresas de transporte
+baseurl: /sis-real-driver
+url: https://mvpslopes.github.io
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Exclude files
+exclude:
+  - README.md
+  - .gitignore
+  - .github/
