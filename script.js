@@ -2053,6 +2053,143 @@ class SisRealDriver {
         document.getElementById('relatorio-tipo').addEventListener('change', () => {
             this.gerarRelatorios();
         });
+
+        // Configurar relatório semanal por motorista
+        this.setupRelatorioSemanal();
+    }
+
+    setupRelatorioSemanal() {
+        // Popular select de motoristas
+        const selectMotorista = document.getElementById('relatorio-motorista-semanal');
+        selectMotorista.innerHTML = '<option value="">Selecione um motorista</option>';
+        
+        this.data.motoristas.forEach(motorista => {
+            const option = document.createElement('option');
+            option.value = motorista.id;
+            option.textContent = motorista.nome;
+            selectMotorista.appendChild(option);
+        });
+
+        // Event listeners
+        selectMotorista.addEventListener('change', () => {
+            this.atualizarRelatorioSemanal();
+        });
+
+        document.getElementById('relatorio-semana-semanal').addEventListener('change', () => {
+            this.atualizarRelatorioSemanal();
+        });
+    }
+
+    atualizarRelatorioSemanal() {
+        const motoristaId = document.getElementById('relatorio-motorista-semanal').value;
+        const semanaFiltro = document.getElementById('relatorio-semana-semanal').value;
+        
+        if (!motoristaId) {
+            document.getElementById('relatorio-semanal-motorista').innerHTML = 
+                '<div class="empty-detail">Selecione um motorista para ver o resumo semanal</div>';
+            return;
+        }
+
+        const dataInicio = document.getElementById('relatorio-data-inicio').value;
+        const dataFim = document.getElementById('relatorio-data-fim').value;
+        
+        const relatorio = this.gerarRelatorioSemanalMotorista(motoristaId, dataInicio, dataFim);
+        
+        if (!relatorio) {
+            document.getElementById('relatorio-semanal-motorista').innerHTML = 
+                '<div class="empty-detail">Motorista não encontrado</div>';
+            return;
+        }
+
+        // Filtrar semanas se necessário
+        let semanasParaExibir = relatorio.semanas;
+        if (semanaFiltro) {
+            const numeroSemana = parseInt(semanaFiltro);
+            semanasParaExibir = relatorio.semanas.filter(s => s.numero === numeroSemana);
+        }
+
+        this.renderRelatorioSemanal(relatorio, semanasParaExibir);
+    }
+
+    renderRelatorioSemanal(relatorio, semanas) {
+        const container = document.getElementById('relatorio-semanal-motorista');
+        
+        if (semanas.length === 0) {
+            container.innerHTML = '<div class="empty-detail">Nenhuma semana encontrada no período selecionado</div>';
+            return;
+        }
+
+        // Atualizar select de semanas
+        const selectSemana = document.getElementById('relatorio-semana-semanal');
+        selectSemana.innerHTML = '<option value="">Todas as semanas</option>';
+        relatorio.semanas.forEach(semana => {
+            const option = document.createElement('option');
+            option.value = semana.numero;
+            option.textContent = `Semana ${semana.numero} - ${semana.periodo}`;
+            selectSemana.appendChild(option);
+        });
+
+        const html = `
+            <div class="relatorio-motorista-header">
+                <h4>${relatorio.motorista.nome}</h4>
+                <div class="relatorio-motorista-stats">
+                    <div class="relatorio-stat">
+                        <div class="relatorio-stat-value">${relatorio.totalSemanas}</div>
+                        <div class="relatorio-stat-label">Semanas</div>
+                    </div>
+                    <div class="relatorio-stat">
+                        <div class="relatorio-stat-value">${relatorio.totalDiarias}</div>
+                        <div class="relatorio-stat-label">Total Diárias</div>
+                    </div>
+                    <div class="relatorio-stat">
+                        <div class="relatorio-stat-value">R$ ${relatorio.totalValor.toFixed(2)}</div>
+                        <div class="relatorio-stat-label">Valor Total</div>
+                    </div>
+                    <div class="relatorio-stat">
+                        <div class="relatorio-stat-value">R$ ${relatorio.totalPago.toFixed(2)}</div>
+                        <div class="relatorio-stat-label">Valor Pago</div>
+                    </div>
+                </div>
+            </div>
+            <div class="semanas-container">
+                ${semanas.map(semana => `
+                    <div class="semana-card">
+                        <div class="semana-header">
+                            <div class="semana-numero">Semana ${semana.numero}</div>
+                            <div class="semana-periodo">${semana.periodo}</div>
+                        </div>
+                        <div class="semana-stats">
+                            <div class="semana-stat total">
+                                <div class="semana-stat-value">${semana.totalDiarias}</div>
+                                <div class="semana-stat-label">Diárias</div>
+                            </div>
+                            <div class="semana-stat pago">
+                                <div class="semana-stat-value">${semana.diariasPagas}</div>
+                                <div class="semana-stat-label">Pagas</div>
+                            </div>
+                            <div class="semana-stat pendente">
+                                <div class="semana-stat-value">${semana.diariasPendentes}</div>
+                                <div class="semana-stat-label">Pendentes</div>
+                            </div>
+                            <div class="semana-stat total">
+                                <div class="semana-stat-value">R$ ${semana.valorTotal.toFixed(2)}</div>
+                                <div class="semana-stat-label">Valor Total</div>
+                            </div>
+                            <div class="semana-stat pago">
+                                <div class="semana-stat-value">R$ ${semana.valorPago.toFixed(2)}</div>
+                                <div class="semana-stat-label">Valor Pago</div>
+                            </div>
+                            <div class="semana-stat pendente">
+                                <div class="semana-stat-value">R$ ${semana.valorPendente.toFixed(2)}</div>
+                                <div class="semana-stat-label">Valor Pendente</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        container.innerHTML = html;
     }
 
     definirPeriodoCompleto() {
@@ -2061,6 +2198,99 @@ class SisRealDriver {
         document.getElementById('relatorio-data-fim').value = periodo.dataFim;
         this.gerarRelatorios();
         this.showMessage('Período definido para todo o histórico de dados', 'success');
+    }
+
+    // Função para calcular as semanas de um motorista baseado na data de início do contrato
+    calcularSemanasMotorista(motoristaId) {
+        // Encontrar o contrato mais antigo do motorista
+        const contratosMotorista = this.data.contratos.filter(c => c.motoristaId === motoristaId);
+        if (contratosMotorista.length === 0) return [];
+
+        // Ordenar por data de início e pegar o mais antigo
+        const contratoInicial = contratosMotorista.sort((a, b) => new Date(a.dataInicio) - new Date(b.dataInicio))[0];
+        const dataInicioContrato = new Date(contratoInicial.dataInicio);
+        
+        console.log(`📅 Data de início do contrato para motorista ${motoristaId}: ${dataInicioContrato.toISOString().split('T')[0]}`);
+
+        // Calcular todas as semanas desde o início do contrato até hoje
+        const semanas = [];
+        const hoje = new Date();
+        let dataAtual = new Date(dataInicioContrato);
+        let numeroSemana = 1;
+
+        while (dataAtual <= hoje) {
+            const inicioSemana = new Date(dataAtual);
+            const fimSemana = new Date(dataAtual);
+            fimSemana.setDate(fimSemana.getDate() + 6); // 6 dias depois = fim da semana
+
+            semanas.push({
+                numero: numeroSemana,
+                inicio: inicioSemana.toISOString().split('T')[0],
+                fim: fimSemana.toISOString().split('T')[0],
+                periodo: `${this.formatDate(inicioSemana.toISOString().split('T')[0])} - ${this.formatDate(fimSemana.toISOString().split('T')[0])}`
+            });
+
+            // Avançar para a próxima semana
+            dataAtual.setDate(dataAtual.getDate() + 7);
+            numeroSemana++;
+        }
+
+        console.log(`📊 Total de semanas calculadas: ${semanas.length}`);
+        return semanas;
+    }
+
+    // Função para gerar relatório semanal por motorista
+    gerarRelatorioSemanalMotorista(motoristaId, semanaInicio, semanaFim) {
+        const motorista = this.data.motoristas.find(m => m.id === motoristaId);
+        if (!motorista) return null;
+
+        const semanas = this.calcularSemanasMotorista(motoristaId);
+        const semanasFiltradas = semanas.filter(semana => {
+            const dataInicio = new Date(semanaInicio);
+            const dataFim = new Date(semanaFim);
+            const inicioSemana = new Date(semana.inicio);
+            const fimSemana = new Date(semana.fim);
+            
+            return (inicioSemana >= dataInicio && inicioSemana <= dataFim) ||
+                   (fimSemana >= dataInicio && fimSemana <= dataFim) ||
+                   (inicioSemana <= dataInicio && fimSemana >= dataFim);
+        });
+
+        const relatorioSemanas = semanasFiltradas.map(semana => {
+            // Filtrar diárias da semana
+            const diariasSemana = this.data.diarias.filter(diaria => {
+                if (diaria.motoristaId !== motoristaId) return false;
+                const dataDiaria = new Date(diaria.data);
+                const inicioSemana = new Date(semana.inicio);
+                const fimSemana = new Date(semana.fim);
+                return dataDiaria >= inicioSemana && dataDiaria <= fimSemana;
+            });
+
+            // Calcular totais da semana
+            const totalDiarias = diariasSemana.length;
+            const valorTotal = diariasSemana.reduce((sum, d) => sum + d.valor, 0);
+            const valorPago = diariasSemana.filter(d => d.status === 'Pago').reduce((sum, d) => sum + d.valor, 0);
+            const diariasPagas = diariasSemana.filter(d => d.status === 'Pago').length;
+
+            return {
+                ...semana,
+                totalDiarias,
+                valorTotal,
+                valorPago,
+                diariasPagas,
+                diariasPendentes: totalDiarias - diariasPagas,
+                valorPendente: valorTotal - valorPago
+            };
+        });
+
+        return {
+            motorista,
+            semanas: relatorioSemanas,
+            totalSemanas: relatorioSemanas.length,
+            totalDiarias: relatorioSemanas.reduce((sum, s) => sum + s.totalDiarias, 0),
+            totalValor: relatorioSemanas.reduce((sum, s) => sum + s.valorTotal, 0),
+            totalPago: relatorioSemanas.reduce((sum, s) => sum + s.valorPago, 0)
+        };
     }
 
     gerarRelatorios() {

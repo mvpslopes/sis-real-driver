@@ -1070,6 +1070,134 @@ body {
     border: 1px solid #e2e8f0;
 }
 
+/* Estilos para filtros de relatório semanal */
+.relatorio-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f1f5f9;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.relatorio-filters .filter-select {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Estilos para cards de semanas */
+.semana-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.semana-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.semana-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.semana-numero {
+    font-weight: bold;
+    color: #1e40af;
+    font-size: 1.1rem;
+}
+
+.semana-periodo {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.semana-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.semana-stat {
+    text-align: center;
+    padding: 0.5rem;
+    background: #f8fafc;
+    border-radius: 6px;
+}
+
+.semana-stat-value {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #1f2937;
+}
+
+.semana-stat-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.semana-stat.pago .semana-stat-value {
+    color: #059669;
+}
+
+.semana-stat.pendente .semana-stat-value {
+    color: #dc2626;
+}
+
+.semana-stat.total .semana-stat-value {
+    color: #1e40af;
+}
+
+/* Estilos para cabeçalho do relatório semanal */
+.relatorio-motorista-header {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.relatorio-motorista-header h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.relatorio-motorista-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.relatorio-motorista-stats .relatorio-stat {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.relatorio-motorista-stats .relatorio-stat-value {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.relatorio-motorista-stats .relatorio-stat-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
 /* Estilos para saldo nos relatórios */
 .saldo-positivo .relatorio-stat-value {
     color: #28a745;
