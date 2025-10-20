@@ -1953,15 +1953,90 @@ class SisRealDriver {
         });
     }
 
+    // Função para detectar o período com dados
+    detectarPeriodoComDados() {
+        console.log('🔍 Detectando período com dados...');
+        const todasAsDatas = [];
+        
+        // Coletar todas as datas de diárias
+        this.data.diarias.forEach(diaria => {
+            if (diaria.data) {
+                const data = new Date(diaria.data);
+                if (!isNaN(data.getTime())) {
+                    todasAsDatas.push(data);
+                }
+            }
+        });
+        
+        // Coletar todas as datas de manutenções
+        this.data.manutencoes.forEach(manutencao => {
+            if (manutencao.data) {
+                const data = new Date(manutencao.data);
+                if (!isNaN(data.getTime())) {
+                    todasAsDatas.push(data);
+                }
+            }
+        });
+        
+        // Coletar todas as datas de contratos
+        this.data.contratos.forEach(contrato => {
+            if (contrato.dataInicio) {
+                const data = new Date(contrato.dataInicio);
+                if (!isNaN(data.getTime())) {
+                    todasAsDatas.push(data);
+                }
+            }
+            if (contrato.dataVencimento) {
+                const data = new Date(contrato.dataVencimento);
+                if (!isNaN(data.getTime())) {
+                    todasAsDatas.push(data);
+                }
+            }
+        });
+        
+        // Coletar todas as datas do financeiro
+        this.data.financeiro.forEach(financeiro => {
+            if (financeiro.data) {
+                const data = new Date(financeiro.data);
+                if (!isNaN(data.getTime())) {
+                    todasAsDatas.push(data);
+                }
+            }
+        });
+        
+        console.log(`📊 Total de datas encontradas: ${todasAsDatas.length}`);
+        
+        if (todasAsDatas.length === 0) {
+            console.log('📅 Nenhum dado encontrado, usando período padrão');
+            // Se não há dados, usar período padrão (última semana)
+            const hoje = new Date();
+            const umaSemanaAtras = new Date(hoje);
+            umaSemanaAtras.setDate(hoje.getDate() - 7);
+            return {
+                dataInicio: umaSemanaAtras.toISOString().split('T')[0],
+                dataFim: hoje.toISOString().split('T')[0]
+            };
+        }
+        
+        // Encontrar a data mais antiga e mais recente
+        const dataMaisAntiga = new Date(Math.min(...todasAsDatas));
+        const dataMaisRecente = new Date(Math.max(...todasAsDatas));
+        
+        console.log(`📅 Período detectado: ${dataMaisAntiga.toISOString().split('T')[0]} até ${dataMaisRecente.toISOString().split('T')[0]}`);
+        
+        return {
+            dataInicio: dataMaisAntiga.toISOString().split('T')[0],
+            dataFim: dataMaisRecente.toISOString().split('T')[0]
+        };
+    }
+
     // Relatórios
     setupRelatorios() {
-        // Configurar datas padrão (última semana)
-        const hoje = new Date();
-        const umaSemanaAtras = new Date(hoje);
-        umaSemanaAtras.setDate(hoje.getDate() - 7);
+        // Detectar período com dados automaticamente
+        const periodo = this.detectarPeriodoComDados();
         
-        document.getElementById('relatorio-data-inicio').value = umaSemanaAtras.toISOString().split('T')[0];
-        document.getElementById('relatorio-data-fim').value = hoje.toISOString().split('T')[0];
+        document.getElementById('relatorio-data-inicio').value = periodo.dataInicio;
+        document.getElementById('relatorio-data-fim').value = periodo.dataFim;
         
         // Gerar relatórios automaticamente
         this.gerarRelatorios();
@@ -1978,6 +2053,14 @@ class SisRealDriver {
         document.getElementById('relatorio-tipo').addEventListener('change', () => {
             this.gerarRelatorios();
         });
+    }
+
+    definirPeriodoCompleto() {
+        const periodo = this.detectarPeriodoComDados();
+        document.getElementById('relatorio-data-inicio').value = periodo.dataInicio;
+        document.getElementById('relatorio-data-fim').value = periodo.dataFim;
+        this.gerarRelatorios();
+        this.showMessage('Período definido para todo o histórico de dados', 'success');
     }
 
     gerarRelatorios() {

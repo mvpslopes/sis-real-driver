@@ -406,15 +406,27 @@
                 </div>
 
                 <div class="filters">
-                    <input type="date" id="relatorio-data-inicio" class="filter-date" title="Data de início">
-                    <input type="date" id="relatorio-data-fim" class="filter-date" title="Data de fim">
-                    <select id="relatorio-tipo" class="filter-select">
-                        <option value="semanal">Relatório Semanal</option>
-                        <option value="mensal">Relatório Mensal</option>
-                        <option value="personalizado">Período Personalizado</option>
-                    </select>
+                    <div class="filter-group">
+                        <label for="relatorio-data-inicio">Data de Início</label>
+                        <input type="date" id="relatorio-data-inicio" class="filter-date" title="Data de início">
+                    </div>
+                    <div class="filter-group">
+                        <label for="relatorio-data-fim">Data de Fim</label>
+                        <input type="date" id="relatorio-data-fim" class="filter-date" title="Data de fim">
+                    </div>
+                    <div class="filter-group">
+                        <label for="relatorio-tipo">Tipo de Relatório</label>
+                        <select id="relatorio-tipo" class="filter-select">
+                            <option value="semanal">Relatório Semanal</option>
+                            <option value="mensal">Relatório Mensal</option>
+                            <option value="personalizado">Período Personalizado</option>
+                        </select>
+                    </div>
                     <button class="btn btn-secondary" onclick="app.gerarRelatorios()">
                         <i class="fas fa-sync-alt"></i> Atualizar Relatórios
+                    </button>
+                    <button class="btn btn-primary" onclick="app.definirPeriodoCompleto()">
+                        <i class="fas fa-calendar-alt"></i> Período Completo
                     </button>
                 </div>
 

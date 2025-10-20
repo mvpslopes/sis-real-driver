@@ -1044,6 +1044,32 @@ body {
     background: rgba(30, 58, 138, 0.3);
 }
 
+/* Estilos para grupos de filtros */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-group label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.filters {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
 /* Estilos para saldo nos relatórios */
 .saldo-positivo .relatorio-stat-value {
     color: #28a745;
