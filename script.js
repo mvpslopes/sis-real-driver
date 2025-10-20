@@ -2071,8 +2071,13 @@ class SisRealDriver {
 
     setupRelatorioSemanal() {
         console.log('🔧 Configurando relatório semanal...');
-        console.log('📊 Motoristas disponíveis:', this.data.motoristas.length);
-        console.log('📋 Contratos disponíveis:', this.data.contratos.length);
+        console.log('📊 DADOS COMPLETOS DO SISTEMA:');
+        console.log('- Motoristas:', this.data.motoristas);
+        console.log('- Contratos:', this.data.contratos);
+        console.log('- Veículos:', this.data.veiculos);
+        console.log('- Diárias:', this.data.diarias);
+        console.log('- Manutenções:', this.data.manutencoes);
+        console.log('- Financeiro:', this.data.financeiro);
         
         // Popular select de motoristas
         const selectMotorista = document.getElementById('relatorio-motorista-semanal');
@@ -2271,6 +2276,22 @@ class SisRealDriver {
     // Função para recarregar dados reais
     recarregarDadosReais() {
         console.log('🔄 Recarregando dados reais...');
+        
+        // Verificar localStorage primeiro
+        const dadosSalvos = localStorage.getItem('sisRealDriver');
+        console.log('💾 Dados no localStorage:', dadosSalvos ? 'Existem' : 'Não existem');
+        
+        if (dadosSalvos) {
+            const dadosParseados = JSON.parse(dadosSalvos);
+            console.log('📊 Dados no localStorage:');
+            console.log('- Motoristas:', dadosParseados.motoristas?.length || 0);
+            console.log('- Contratos:', dadosParseados.contratos?.length || 0);
+            console.log('- Veículos:', dadosParseados.veiculos?.length || 0);
+            console.log('- Diárias:', dadosParseados.diarias?.length || 0);
+            console.log('- Manutenções:', dadosParseados.manutencoes?.length || 0);
+            console.log('- Financeiro:', dadosParseados.financeiro?.length || 0);
+        }
+        
         console.log('📊 Estado atual dos dados REAIS:');
         console.log('- Motoristas reais:', this.data.motoristas.length);
         console.log('- Contratos reais:', this.data.contratos.length);
@@ -2289,6 +2310,93 @@ class SisRealDriver {
         // Recarregar o setup do relatório semanal
         this.setupRelatorioSemanal();
     }
+
+    // Função para verificar e restaurar backups
+    verificarERestaurarBackups() {
+        console.log('🔍 Verificando backups disponíveis...');
+        
+        // Verificar diferentes tipos de backup
+        const backups = {
+            principal: localStorage.getItem('sisRealDriver'),
+            backup: localStorage.getItem('sisRealDriver_backup'),
+            autoBackup: localStorage.getItem('sisRealDriver_autoBackup'),
+            sessionBackup: localStorage.getItem('sisRealDriver_sessionBackup')
+        };
+        
+        console.log('📊 Backups encontrados:');
+        console.log('- Principal:', backups.principal ? 'Sim' : 'Não');
+        console.log('- Backup:', backups.backup ? 'Sim' : 'Não');
+        console.log('- Auto Backup:', backups.autoBackup ? 'Sim' : 'Não');
+        console.log('- Session Backup:', backups.sessionBackup ? 'Sim' : 'Não');
+        
+        // Verificar qual backup tem mais dados
+        let melhorBackup = null;
+        let maiorQuantidade = 0;
+        
+        Object.keys(backups).forEach(tipo => {
+            if (backups[tipo]) {
+                try {
+                    const dados = JSON.parse(backups[tipo]);
+                    const total = (dados.motoristas?.length || 0) + 
+                                 (dados.contratos?.length || 0) + 
+                                 (dados.veiculos?.length || 0) + 
+                                 (dados.diarias?.length || 0) + 
+                                 (dados.manutencoes?.length || 0) + 
+                                 (dados.financeiro?.length || 0);
+                    
+                    console.log(`📊 ${tipo}: ${total} registros`);
+                    
+                    if (total > maiorQuantidade) {
+                        maiorQuantidade = total;
+                        melhorBackup = { tipo, dados };
+                    }
+                } catch (error) {
+                    console.log(`❌ Erro ao processar ${tipo}:`, error);
+                }
+            }
+        });
+        
+        if (melhorBackup) {
+            console.log(`✅ Melhor backup encontrado: ${melhorBackup.tipo} com ${maiorQuantidade} registros`);
+            return melhorBackup.dados;
+        } else {
+            console.log('❌ Nenhum backup válido encontrado');
+            return null;
+        }
+    }
+
+    // Função para restaurar backup
+    restaurarBackup() {
+        console.log('🔄 Restaurando backup...');
+        
+        const backup = this.verificarERestaurarBackups();
+        
+        if (backup) {
+            console.log('📊 Restaurando dados do backup...');
+            this.data = backup;
+            this.saveData();
+            
+            console.log('✅ Backup restaurado com sucesso!');
+            console.log('📊 Dados restaurados:');
+            console.log('- Motoristas:', this.data.motoristas.length);
+            console.log('- Contratos:', this.data.contratos.length);
+            console.log('- Veículos:', this.data.veiculos.length);
+            console.log('- Diárias:', this.data.diarias.length);
+            console.log('- Manutenções:', this.data.manutencoes.length);
+            console.log('- Financeiro:', this.data.financeiro.length);
+            
+            // Atualizar interface
+            this.updateDashboard();
+            this.setupRelatorioSemanal();
+            
+            alert('✅ Backup restaurado com sucesso!');
+        } else {
+            console.log('❌ Nenhum backup disponível para restaurar');
+            alert('❌ Nenhum backup disponível para restaurar');
+        }
+    }
+
+
 
     definirPeriodoCompleto() {
         const periodo = this.detectarPeriodoComDados();
