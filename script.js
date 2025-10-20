@@ -23,6 +23,10 @@ class SisRealDriver {
 
     init() {
         console.log('🔧 Inicializando SisRealDriver...');
+        
+        // Verificar se há nova versão
+        this.verificarAtualizacao();
+        
         this.setupEventListeners();
         this.loadData();
         this.updateDashboard();
@@ -37,6 +41,37 @@ class SisRealDriver {
         }, 300);
         
         console.log('✅ SisRealDriver inicializado com sucesso');
+    }
+
+    // Função para verificar se há atualização
+    verificarAtualizacao() {
+        const VERSION_ATUAL = "1.0.0";
+        const versaoSalva = localStorage.getItem('app_version');
+        
+        if (versaoSalva !== VERSION_ATUAL) {
+            console.log('🔄 Nova versão detectada!');
+            console.log(`📊 Versão anterior: ${versaoSalva || 'N/A'}`);
+            console.log(`📊 Versão atual: ${VERSION_ATUAL}`);
+            
+            // Criar backup antes da atualização
+            if (this.data.motoristas.length > 0 || this.data.contratos.length > 0) {
+                console.log('💾 Criando backup antes da atualização...');
+                const backupPreAtualizacao = {
+                    ...this.data,
+                    timestamp: new Date().toISOString(),
+                    version: versaoSalva || 'unknown',
+                    motivo: 'backup_pre_atualizacao'
+                };
+                localStorage.setItem('sisRealDriver_preUpdate', JSON.stringify(backupPreAtualizacao));
+            }
+            
+            // Atualizar versão
+            localStorage.setItem('app_version', VERSION_ATUAL);
+            
+            console.log('✅ Sistema atualizado com sucesso!');
+        } else {
+            console.log('✅ Sistema na versão mais recente');
+        }
     }
 
     setupEventListeners() {
@@ -304,9 +339,19 @@ class SisRealDriver {
 
     saveData() {
         console.log('💾 Salvando dados...');
-        // Save to localStorage (primary storage)
+        
+        // Salvar dados principais
         localStorage.setItem('sisRealDriverData', JSON.stringify(this.data));
-        console.log('✅ Dados salvos com sucesso');
+        
+        // Criar backup automático com timestamp
+        const backupData = {
+            ...this.data,
+            timestamp: new Date().toISOString(),
+            version: "1.0.0"
+        };
+        localStorage.setItem('sisRealDriver_backup', JSON.stringify(backupData));
+        
+        console.log('✅ Dados salvos com sucesso + backup automático criado');
     }
 
 
@@ -1667,12 +1712,12 @@ class SisRealDriver {
                 
                 // Aguardar um pouco para garantir que os selects foram populados
                 setTimeout(() => {
-                    document.getElementById('contrato-veiculo').value = contrato.veiculoId;
-                    document.getElementById('contrato-motorista').value = contrato.motoristaId;
-                    document.getElementById('contrato-data-inicio').value = contrato.dataInicio;
-                    document.getElementById('contrato-duracao').value = contrato.duracao;
-                    document.getElementById('contrato-valor-mensal').value = contrato.valorMensal;
-                    document.getElementById('contrato-observacoes').value = contrato.observacoes || '';
+                document.getElementById('contrato-veiculo').value = contrato.veiculoId;
+                document.getElementById('contrato-motorista').value = contrato.motoristaId;
+                document.getElementById('contrato-data-inicio').value = contrato.dataInicio;
+                document.getElementById('contrato-duracao').value = contrato.duracao;
+                document.getElementById('contrato-valor-mensal').value = contrato.valorMensal;
+                document.getElementById('contrato-observacoes').value = contrato.observacoes || '';
                     console.log('✅ Dados do contrato carregados no formulário');
                 }, 100);
             } else {
@@ -2018,9 +2063,9 @@ class SisRealDriver {
         if (todasAsDatas.length === 0) {
             console.log('📅 Nenhum dado encontrado, usando período padrão');
             // Se não há dados, usar período padrão (última semana)
-            const hoje = new Date();
-            const umaSemanaAtras = new Date(hoje);
-            umaSemanaAtras.setDate(hoje.getDate() - 7);
+        const hoje = new Date();
+        const umaSemanaAtras = new Date(hoje);
+        umaSemanaAtras.setDate(hoje.getDate() - 7);
             return {
                 dataInicio: umaSemanaAtras.toISOString().split('T')[0],
                 dataFim: hoje.toISOString().split('T')[0]
