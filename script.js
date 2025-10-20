@@ -175,6 +175,26 @@ class SisRealDriver {
         }
     }
 
+    // Função utilitária para formatar datas corretamente
+    formatDate(dateString) {
+        if (!dateString) return '';
+        
+        // Se a data já está no formato correto (DD/MM/YYYY), retorna como está
+        if (dateString.includes('/')) {
+            return dateString;
+        }
+        
+        // Se está no formato YYYY-MM-DD, converte corretamente evitando problemas de timezone
+        try {
+            const [year, month, day] = dateString.split('-');
+            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            return date.toLocaleDateString('pt-BR');
+        } catch (error) {
+            console.error('Erro ao formatar data:', dateString, error);
+            return dateString; // Retorna a string original em caso de erro
+        }
+    }
+
     // Data Management
     loadData() {
         console.log('📊 Carregando dados...');
@@ -1279,7 +1299,7 @@ class SisRealDriver {
             row.innerHTML = `
                 <td>${motorista ? motorista.nome : 'Motorista não encontrado'}</td>
                 <td>${veiculo ? `${veiculo.marca} ${veiculo.modelo}` : 'Veículo não encontrado'}</td>
-                <td>${new Date(diaria.data).toLocaleDateString('pt-BR')}</td>
+                <td>${this.formatDate(diaria.data)}</td>
                 <td>R$ ${diaria.valor.toFixed(2)}</td>
                 <td><span class="status-badge status-${diaria.status.toLowerCase()}">${diaria.status}</span></td>
                 <td>
@@ -1328,7 +1348,7 @@ class SisRealDriver {
             row.innerHTML = `
                 <td>${motorista ? motorista.nome : 'Motorista não encontrado'}</td>
                 <td>${veiculo ? `${veiculo.marca} ${veiculo.modelo}` : 'Veículo não encontrado'}</td>
-                <td>${new Date(diaria.data).toLocaleDateString('pt-BR')}</td>
+                <td>${this.formatDate(diaria.data)}</td>
                 <td>R$ ${diaria.valor.toFixed(2)}</td>
                 <td><span class="status-badge status-${diaria.status.toLowerCase()}">${diaria.status}</span></td>
                 <td>
@@ -1532,7 +1552,7 @@ class SisRealDriver {
             row.innerHTML = `
                 <td>${veiculo ? `${veiculo.marca} ${veiculo.modelo}` : 'Veículo não encontrado'}</td>
                 <td>${manutencao.tipo}</td>
-                <td>${new Date(manutencao.data).toLocaleDateString('pt-BR')}</td>
+                <td>${this.formatDate(manutencao.data)}</td>
                 <td>R$ ${manutencao.valor.toFixed(2)}</td>
                 <td>${manutencao.descricao}</td>
                 <td>
@@ -1580,7 +1600,7 @@ class SisRealDriver {
             row.innerHTML = `
                 <td>${veiculo ? `${veiculo.marca} ${veiculo.modelo}` : 'Veículo não encontrado'}</td>
                 <td>${manutencao.tipo}</td>
-                <td>${new Date(manutencao.data).toLocaleDateString('pt-BR')}</td>
+                <td>${this.formatDate(manutencao.data)}</td>
                 <td>R$ ${manutencao.valor.toFixed(2)}</td>
                 <td>${manutencao.descricao}</td>
                 <td>
@@ -1758,8 +1778,8 @@ class SisRealDriver {
             row.innerHTML = `
                 <td>${veiculo ? `${veiculo.marca} ${veiculo.modelo}` : 'Veículo não encontrado'}</td>
                 <td>${motorista ? motorista.nome : 'Motorista não encontrado'}</td>
-                <td>${new Date(contrato.dataInicio).toLocaleDateString('pt-BR')}</td>
-                <td>${new Date(contrato.dataVencimento).toLocaleDateString('pt-BR')}</td>
+                <td>${this.formatDate(contrato.dataInicio)}</td>
+                <td>${this.formatDate(contrato.dataVencimento)}</td>
                 <td>${contrato.duracao} dias</td>
                 <td>R$ ${contrato.valorMensal.toFixed(2)}</td>
                 <td><span class="status-badge status-${status.toLowerCase()}">${status}</span></td>
@@ -1847,8 +1867,8 @@ class SisRealDriver {
             row.innerHTML = `
                 <td>${veiculo ? `${veiculo.marca} ${veiculo.modelo}` : 'Veículo não encontrado'}</td>
                 <td>${motorista ? motorista.nome : 'Motorista não encontrado'}</td>
-                <td>${new Date(contrato.dataInicio).toLocaleDateString('pt-BR')}</td>
-                <td>${new Date(contrato.dataVencimento).toLocaleDateString('pt-BR')}</td>
+                <td>${this.formatDate(contrato.dataInicio)}</td>
+                <td>${this.formatDate(contrato.dataVencimento)}</td>
                 <td>${contrato.duracao} dias</td>
                 <td>R$ ${contrato.valorMensal.toFixed(2)}</td>
                 <td><span class="status-badge status-${status.toLowerCase()}">${status}</span></td>
@@ -2170,7 +2190,7 @@ class SisRealDriver {
                         <div class="manutencao-item ${manutencao.tipo.toLowerCase()}">
                             <div class="manutencao-info">
                                 <div class="manutencao-tipo">${manutencao.tipo}</div>
-                                <div class="manutencao-data">${new Date(manutencao.data).toLocaleDateString('pt-BR')}</div>
+                                <div class="manutencao-data">${this.formatDate(manutencao.data)}</div>
                                 <div class="manutencao-descricao">${manutencao.descricao || 'Sem descrição'}</div>
                             </div>
                             <div class="manutencao-valor">R$ ${manutencao.valor.toFixed(2)}</div>
@@ -2357,7 +2377,7 @@ class SisRealDriver {
             row.innerHTML = `
                 <td>${financeiro.descricao}</td>
                 <td>R$ ${financeiro.valor.toFixed(2)}</td>
-                <td>${new Date(financeiro.data).toLocaleDateString('pt-BR')}</td>
+                <td>${this.formatDate(financeiro.data)}</td>
                 <td><span class="status-badge status-${financeiro.tipo.toLowerCase()}">${financeiro.tipo}</span></td>
                 <td>${financeiro.categoria}</td>
                 <td>
@@ -2403,7 +2423,7 @@ class SisRealDriver {
             row.innerHTML = `
                 <td>${f.descricao}</td>
                 <td>R$ ${f.valor.toFixed(2)}</td>
-                <td>${new Date(f.data).toLocaleDateString('pt-BR')}</td>
+                <td>${this.formatDate(f.data)}</td>
                 <td><span class="status-badge status-${f.tipo.toLowerCase()}">${f.tipo}</span></td>
                 <td>${f.categoria}</td>
                 <td>
@@ -2508,7 +2528,7 @@ class SisRealDriver {
         container.innerHTML = ultimasManutencoes.map(manutencao => {
             const veiculo = this.data.veiculos.find(v => v.id === manutencao.veiculoId);
             const veiculoNome = veiculo ? `${veiculo.marca} ${veiculo.modelo}` : 'Veículo não encontrado';
-            const data = new Date(manutencao.data).toLocaleDateString('pt-BR');
+            const data = this.formatDate(manutencao.data);
             
             return `
                 <div class="detail-item">
@@ -2540,7 +2560,7 @@ class SisRealDriver {
         container.innerHTML = diariasPendentes.map(diaria => {
             const motorista = this.data.motoristas.find(m => m.id === diaria.motoristaId);
             const motoristaNome = motorista ? motorista.nome : 'Motorista não encontrado';
-            const data = new Date(diaria.data).toLocaleDateString('pt-BR');
+            const data = this.formatDate(diaria.data);
             
             return `
                 <div class="detail-item">
