@@ -1962,6 +1962,22 @@ class SisRealDriver {
         
         document.getElementById('relatorio-data-inicio').value = umaSemanaAtras.toISOString().split('T')[0];
         document.getElementById('relatorio-data-fim').value = hoje.toISOString().split('T')[0];
+        
+        // Gerar relatórios automaticamente
+        this.gerarRelatorios();
+        
+        // Adicionar event listeners para regenerar relatórios quando datas mudarem
+        document.getElementById('relatorio-data-inicio').addEventListener('change', () => {
+            this.gerarRelatorios();
+        });
+        
+        document.getElementById('relatorio-data-fim').addEventListener('change', () => {
+            this.gerarRelatorios();
+        });
+        
+        document.getElementById('relatorio-tipo').addEventListener('change', () => {
+            this.gerarRelatorios();
+        });
     }
 
     gerarRelatorios() {
@@ -1993,8 +2009,16 @@ class SisRealDriver {
             return dataDiaria >= new Date(dataInicio) && dataDiaria <= new Date(dataFim);
         });
 
+        // Filtrar manutenções no período
+        const manutencoesPeriodo = this.data.manutencoes.filter(m => {
+            const dataManutencao = new Date(m.data);
+            return dataManutencao >= new Date(dataInicio) && dataManutencao <= new Date(dataFim);
+        });
+
         // Agrupar por veículo
         const relatorioVeiculos = {};
+        
+        // Processar diárias
         diariasPeriodo.forEach(diaria => {
             const veiculo = this.data.veiculos.find(v => v.id === diaria.veiculoId);
             if (veiculo) {
@@ -2005,7 +2029,10 @@ class SisRealDriver {
                         totalDiarias: 0,
                         totalValor: 0,
                         diariasPagas: 0,
-                        valorPago: 0
+                        valorPago: 0,
+                        totalManutencoes: 0,
+                        valorManutencoes: 0,
+                        saldo: 0
                     };
                 }
                 relatorioVeiculos[veiculoKey].totalDiarias++;
@@ -2015,6 +2042,33 @@ class SisRealDriver {
                     relatorioVeiculos[veiculoKey].valorPago += diaria.valor;
                 }
             }
+        });
+
+        // Processar manutenções
+        manutencoesPeriodo.forEach(manutencao => {
+            const veiculo = this.data.veiculos.find(v => v.id === manutencao.veiculoId);
+            if (veiculo) {
+                const veiculoKey = `${veiculo.marca} ${veiculo.modelo}`;
+                if (!relatorioVeiculos[veiculoKey]) {
+                    relatorioVeiculos[veiculoKey] = {
+                        veiculo,
+                        totalDiarias: 0,
+                        totalValor: 0,
+                        diariasPagas: 0,
+                        valorPago: 0,
+                        totalManutencoes: 0,
+                        valorManutencoes: 0,
+                        saldo: 0
+                    };
+                }
+                relatorioVeiculos[veiculoKey].totalManutencoes++;
+                relatorioVeiculos[veiculoKey].valorManutencoes += manutencao.valor;
+            }
+        });
+
+        // Calcular saldo para cada veículo
+        Object.values(relatorioVeiculos).forEach(item => {
+            item.saldo = item.valorPago - item.valorManutencoes;
         });
 
         // Renderizar relatório
@@ -2041,12 +2095,16 @@ class SisRealDriver {
                         <div class="relatorio-stat-label">Diárias</div>
                     </div>
                     <div class="relatorio-stat">
-                        <div class="relatorio-stat-value">R$ ${item.totalValor.toFixed(2)}</div>
-                        <div class="relatorio-stat-label">Total</div>
+                        <div class="relatorio-stat-value">R$ ${item.valorPago.toFixed(2)}</div>
+                        <div class="relatorio-stat-label">Receita</div>
                     </div>
                     <div class="relatorio-stat">
-                        <div class="relatorio-stat-value">R$ ${item.valorPago.toFixed(2)}</div>
-                        <div class="relatorio-stat-label">Pago</div>
+                        <div class="relatorio-stat-value">R$ ${item.valorManutencoes.toFixed(2)}</div>
+                        <div class="relatorio-stat-label">Manutenções</div>
+                    </div>
+                    <div class="relatorio-stat ${item.saldo >= 0 ? 'saldo-positivo' : 'saldo-negativo'}">
+                        <div class="relatorio-stat-value">R$ ${item.saldo.toFixed(2)}</div>
+                        <div class="relatorio-stat-label">Saldo</div>
                     </div>
                 </div>
             </div>

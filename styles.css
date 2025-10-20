@@ -1044,6 +1044,25 @@ body {
     background: rgba(30, 58, 138, 0.3);
 }
 
+/* Estilos para saldo nos relatórios */
+.saldo-positivo .relatorio-stat-value {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.saldo-negativo .relatorio-stat-value {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.saldo-positivo .relatorio-stat-label {
+    color: #28a745;
+}
+
+.saldo-negativo .relatorio-stat-label {
+    color: #dc3545;
+}
+
 /* Estilos para relatórios de veículos */
 .relatorio-veiculo {
     margin-bottom: 1.5rem;
