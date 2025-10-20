@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SisRealDriver - Sistema de Controle de Motoristas e Veículos</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="logo.webp" alt="Real Driver Logo" class="logo-img">
+                    <h1>SisRealDriver</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Exportar Excel
+                    </button>
+                    <button class="btn btn-secondary" onclick="backupSystem()">
+                        <i class="fas fa-save"></i> Backup
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadAutoBackup()">
+                        <i class="fas fa-download"></i> Baixar Auto Backup
+                    </button>
+                    <button class="btn btn-secondary" onclick="restoreSystem()">
+                        <i class="fas fa-undo"></i> Restaurar
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="dashboard">
+                <i class="fas fa-chart-pie"></i>
+                Dashboard
+            </button>
+            <button class="nav-tab" data-tab="motoristas">
+                <i class="fas fa-user-tie"></i>
+                Motoristas
+            </button>
+            <button class="nav-tab" data-tab="veiculos">
+                <i class="fas fa-car"></i>
+                Veículos
+            </button>
+            <button class="nav-tab" data-tab="diarias">
+                <i class="fas fa-calendar-day"></i>
+                Diárias
+            </button>
+            <button class="nav-tab" data-tab="manutencoes">
+                <i class="fas fa-wrench"></i>
+                Manutenções
+            </button>
+            <button class="nav-tab" data-tab="contratos">
+                <i class="fas fa-file-contract"></i>
+                Contratos
+            </button>
+            <button class="nav-tab" data-tab="relatorios">
+                <i class="fas fa-chart-bar"></i>
+                Relatórios
+            </button>
+            <button class="nav-tab" data-tab="financeiro">
+                <i class="fas fa-dollar-sign"></i>
+                Financeiro
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard -->
+            <section id="dashboard" class="tab-content active">
+                <div class="section-header">
+                    <h2>Dashboard</h2>
+                    <div>
+                        <p>Visão geral do sistema</p>
+                        <button class="btn btn-secondary" onclick="app.updateDashboard()" style="margin-left: 1rem;">
+                            <i class="fas fa-sync-alt"></i> Atualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-motoristas">0</h3>
+                            <p>Motoristas Ativos</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-veiculos">0</h3>
+                            <p>Veículos Ativos</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-diarias">0</h3>
+                            <p>Diárias do Mês</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-contratos">0</h3>
+                            <p>Contratos Ativos</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="receita-mes">R$ 0,00</h3>
+                            <p>Receita do Mês</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Receitas vs Despesas</h3>
+                        <canvas id="receitasChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Manutenções por Mês</h3>
+                        <canvas id="manutencoesChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Utilização vs Manutenção dos Veículos</h3>
+                        <div id="utilizacao-veiculos" class="utilizacao-content">
+                            <!-- Conteúdo será preenchido pelo JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações Detalhadas -->
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <h3><i class="fas fa-wrench"></i> Últimas Manutenções</h3>
+                        <div id="ultimas-manutencoes" class="detail-content">
+                            <!-- Conteúdo será preenchido pelo JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3><i class="fas fa-calendar-day"></i> Diárias Pendentes</h3>
+                        <div id="diarias-pendentes" class="detail-content">
+                            <!-- Conteúdo será preenchido pelo JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3><i class="fas fa-car"></i> Status dos Veículos</h3>
+                        <div id="status-veiculos" class="detail-content">
+                            <!-- Conteúdo será preenchido pelo JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3><i class="fas fa-file-contract"></i> Contratos Vencendo</h3>
+                        <div id="contratos-vencendo" class="detail-content">
+                            <!-- Conteúdo será preenchido pelo JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3><i class="fas fa-chart-line"></i> Progresso dos Contratos</h3>
+                        <div id="progresso-contratos" class="detail-content">
+                            <!-- Conteúdo será preenchido pelo JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3><i class="fas fa-clock"></i> Disponibilidade dos Veículos</h3>
+                        <div id="disponibilidade-veiculos" class="detail-content">
+                            <!-- Conteúdo será preenchido pelo JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3><i class="fas fa-chart-line"></i> Resumo Financeiro</h3>
+                        <div id="resumo-financeiro" class="detail-content">
+                            <!-- Conteúdo será preenchido pelo JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Motoristas -->
+            <section id="motoristas" class="tab-content">
+                <div class="section-header">
+                    <h2>Motoristas</h2>
+                    <button class="btn btn-primary" onclick="openMotoristaModal()">
+                        <i class="fas fa-plus"></i> Novo Motorista
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="search-motoristas" placeholder="Buscar motoristas..." class="search-input">
+                    <select id="filter-status-motoristas" class="filter-select">
+                        <option value="">Todos os Status</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="motoristas-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CPF</th>
+                                <th>CNH</th>
+                                <th>Telefone</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Veículos -->
+            <section id="veiculos" class="tab-content">
+                <div class="section-header">
+                    <h2>Veículos</h2>
+                    <button class="btn btn-primary" onclick="openVeiculoModal()">
+                        <i class="fas fa-plus"></i> Novo Veículo
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="search-veiculos" placeholder="Buscar veículos..." class="search-input">
+                    <select id="filter-status-veiculos" class="filter-select">
+                        <option value="">Todos os Status</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                        <option value="Manutenção">Em Manutenção</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="veiculos-table">
+                        <thead>
+                            <tr>
+                                <th>Modelo</th>
+                                <th>Marca</th>
+                                <th>Placa</th>
+                                <th>Ano</th>
+                                <th>Cor</th>
+                                <th>Motorista</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Diárias -->
+            <section id="diarias" class="tab-content">
+                <div class="section-header">
+                    <h2>Controle de Diárias</h2>
+                    <button class="btn btn-primary" onclick="openDiariaModal()">
+                        <i class="fas fa-plus"></i> Nova Diária
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="search-diarias" placeholder="Buscar diárias..." class="search-input">
+                    <input type="date" id="filter-date-diarias" class="filter-date">
+                    <select id="filter-status-diarias" class="filter-select">
+                        <option value="">Todos os Status</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Pago">Pago</option>
+                        <option value="Cancelado">Cancelado</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="diarias-table">
+                        <thead>
+                            <tr>
+                                <th>Motorista</th>
+                                <th>Veículo</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Manutenções -->
+            <section id="manutencoes" class="tab-content">
+                <div class="section-header">
+                    <h2>Controle de Manutenções</h2>
+                    <button class="btn btn-primary" onclick="openManutencaoModal()">
+                        <i class="fas fa-plus"></i> Nova Manutenção
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="search-manutencoes" placeholder="Buscar manutenções..." class="search-input">
+                    <select id="filter-tipo-manutencoes" class="filter-select">
+                        <option value="">Todos os Tipos</option>
+                        <option value="Preventiva">Preventiva</option>
+                        <option value="Corretiva">Corretiva</option>
+                        <option value="Emergencial">Emergencial</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="manutencoes-table">
+                        <thead>
+                            <tr>
+                                <th>Veículo</th>
+                                <th>Tipo</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Descrição</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Contratos de Locação -->
+            <section id="contratos" class="tab-content">
+                <div class="section-header">
+                    <h2>Contratos de Locação</h2>
+                    <button class="btn btn-primary" onclick="openContratoModal()">
+                        <i class="fas fa-plus"></i> Novo Contrato
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="search-contratos" placeholder="Buscar contratos..." class="search-input">
+                    <select id="filter-status-contratos" class="filter-select">
+                        <option value="">Todos os Status</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Vencido">Vencido</option>
+                        <option value="Finalizado">Finalizado</option>
+                    </select>
+                    <select id="filter-vencimento-contratos" class="filter-select">
+                        <option value="">Todos os Vencimentos</option>
+                        <option value="vencendo">Vencendo em 10 dias</option>
+                        <option value="vencido">Vencidos</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="contratos-table">
+                        <thead>
+                            <tr>
+                                <th>Veículo</th>
+                                <th>Motorista</th>
+                                <th>Início</th>
+                                <th>Vencimento</th>
+                                <th>Duração</th>
+                                <th>Valor Mensal</th>
+                                <th>Status</th>
+                                <th>Farol</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Relatórios -->
+            <section id="relatorios" class="tab-content">
+                <div class="section-header">
+                    <h2>Relatórios</h2>
+                    <div>
+                        <p>Relatórios semanais de diárias por veículo e motorista</p>
+                        <button class="btn btn-secondary" onclick="app.exportarRelatorios()" style="margin-left: 1rem;">
+                            <i class="fas fa-file-excel"></i> Exportar Relatórios
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <input type="date" id="relatorio-data-inicio" class="filter-date" title="Data de início">
+                    <input type="date" id="relatorio-data-fim" class="filter-date" title="Data de fim">
+                    <select id="relatorio-tipo" class="filter-select">
+                        <option value="semanal">Relatório Semanal</option>
+                        <option value="mensal">Relatório Mensal</option>
+                        <option value="personalizado">Período Personalizado</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="app.gerarRelatorios()">
+                        <i class="fas fa-search"></i> Gerar Relatórios
+                    </button>
+                </div>
+
+                <div class="relatorios-grid">
+                    <div class="relatorio-card">
+                        <h3><i class="fas fa-car"></i> Relatório por Veículo</h3>
+                        <div id="relatorio-veiculos" class="relatorio-content">
+                            <div class="empty-detail">Selecione um período e clique em "Gerar Relatórios"</div>
+                        </div>
+                    </div>
+                    
+                    <div class="relatorio-card">
+                        <h3><i class="fas fa-user-tie"></i> Relatório por Motorista</h3>
+                        <div id="relatorio-motoristas" class="relatorio-content">
+                            <div class="empty-detail">Selecione um período e clique em "Gerar Relatórios"</div>
+                        </div>
+                    </div>
+                    
+                    <div class="relatorio-card">
+                        <h3><i class="fas fa-wrench"></i> Relatório de Manutenções</h3>
+                        <div id="relatorio-manutencoes" class="relatorio-content">
+                            <div class="empty-detail">Selecione um período e clique em "Gerar Relatórios"</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Financeiro -->
+            <section id="financeiro" class="tab-content">
+                <div class="section-header">
+                    <h2>Controle Financeiro</h2>
+                    <button class="btn btn-primary" onclick="openFinanceiroModal()">
+                        <i class="fas fa-plus"></i> Nova Transação
+                    </button>
+                </div>
+                
+                <div class="info-box">
+                    <p><strong>💡 Dica:</strong> Use este módulo para registrar receitas e despesas gerais da empresa (combustível, impostos, salários, etc.). As diárias dos motoristas são controladas separadamente na aba "Diárias".</p>
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="search-financeiro" placeholder="Buscar transações..." class="search-input">
+                    <select id="filter-tipo-financeiro" class="filter-select">
+                        <option value="">Todos os Tipos</option>
+                        <option value="Receita">Receita</option>
+                        <option value="Despesa">Despesa</option>
+                    </select>
+                    <select id="filter-categoria-financeiro" class="filter-select">
+                        <option value="">Todas as Categorias</option>
+                        <option value="Diárias">Diárias</option>
+                        <option value="Manutenção">Manutenção</option>
+                        <option value="Combustível">Combustível</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="financeiro-table">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Categoria</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Motorista Modal -->
+    <div id="motorista-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="motorista-modal-title">Novo Motorista</h3>
+                <button class="close-btn" onclick="closeModal('motorista-modal')">&times;</button>
+            </div>
+            <form id="motorista-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="motorista-nome">Nome Completo *</label>
+                        <input type="text" id="motorista-nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="motorista-cpf">CPF *</label>
+                        <input type="text" id="motorista-cpf" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="motorista-cnh">CNH *</label>
+                        <input type="text" id="motorista-cnh" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="motorista-telefone">Telefone *</label>
+                        <input type="tel" id="motorista-telefone" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="motorista-endereco">Endereço</label>
+                        <textarea id="motorista-endereco" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="motorista-status">Status</label>
+                        <select id="motorista-status">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('motorista-modal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Veículo Modal -->
+    <div id="veiculo-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="veiculo-modal-title">Novo Veículo</h3>
+                <button class="close-btn" onclick="closeModal('veiculo-modal')">&times;</button>
+            </div>
+            <form id="veiculo-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="veiculo-modelo">Modelo *</label>
+                        <input type="text" id="veiculo-modelo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="veiculo-marca">Marca *</label>
+                        <input type="text" id="veiculo-marca" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="veiculo-placa">Placa *</label>
+                        <input type="text" id="veiculo-placa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="veiculo-ano">Ano *</label>
+                        <input type="number" id="veiculo-ano" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="veiculo-cor">Cor</label>
+                        <input type="text" id="veiculo-cor">
+                    </div>
+                    <div class="form-group">
+                        <label for="veiculo-motorista">Motorista Responsável</label>
+                        <select id="veiculo-motorista">
+                            <option value="">Selecione um motorista</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="veiculo-status">Status</label>
+                        <select id="veiculo-status">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                            <option value="Manutenção">Em Manutenção</option>
+                            <option value="Locado">Locado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('veiculo-modal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Diária Modal -->
+    <div id="diaria-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="diaria-modal-title">Nova Diária</h3>
+                <button class="close-btn" onclick="closeModal('diaria-modal')">&times;</button>
+            </div>
+            <form id="diaria-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="diaria-motorista">Motorista *</label>
+                        <select id="diaria-motorista" required>
+                            <option value="">Selecione um motorista</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="diaria-veiculo">Veículo *</label>
+                        <select id="diaria-veiculo" required>
+                            <option value="">Selecione um veículo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="diaria-data">Data *</label>
+                        <input type="date" id="diaria-data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="diaria-valor">Valor *</label>
+                        <input type="number" id="diaria-valor" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="diaria-status">Status</label>
+                        <select id="diaria-status">
+                            <option value="Pendente">Pendente</option>
+                            <option value="Pago">Pago</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('diaria-modal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manutenção Modal -->
+    <div id="manutencao-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="manutencao-modal-title">Nova Manutenção</h3>
+                <button class="close-btn" onclick="closeModal('manutencao-modal')">&times;</button>
+            </div>
+            <form id="manutencao-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="manutencao-veiculo">Veículo *</label>
+                        <select id="manutencao-veiculo" required>
+                            <option value="">Selecione um veículo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="manutencao-tipo">Tipo *</label>
+                        <select id="manutencao-tipo" required>
+                            <option value="Preventiva">Preventiva</option>
+                            <option value="Corretiva">Corretiva</option>
+                            <option value="Emergencial">Emergencial</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="manutencao-data">Data *</label>
+                        <input type="date" id="manutencao-data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="manutencao-valor">Valor *</label>
+                        <input type="number" id="manutencao-valor" step="0.01" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="manutencao-descricao">Descrição</label>
+                        <textarea id="manutencao-descricao" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('manutencao-modal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contrato Modal -->
+    <div id="contrato-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="contrato-modal-title">Novo Contrato</h3>
+                <button class="close-btn" onclick="closeModal('contrato-modal')">&times;</button>
+            </div>
+            <form id="contrato-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="contrato-veiculo">Veículo *</label>
+                        <select id="contrato-veiculo" required>
+                            <option value="">Selecione um veículo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="contrato-motorista">Motorista *</label>
+                        <select id="contrato-motorista" required>
+                            <option value="">Selecione um motorista</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="contrato-data-inicio">Data de Início *</label>
+                        <input type="date" id="contrato-data-inicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contrato-duracao">Duração do Contrato *</label>
+                        <select id="contrato-duracao" required>
+                            <option value="">Selecione a duração</option>
+                            <option value="30">30 dias</option>
+                            <option value="60">60 dias</option>
+                            <option value="90">90 dias</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="contrato-valor-mensal">Valor Mensal (R$) *</label>
+                        <input type="number" id="contrato-valor-mensal" step="0.01" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="contrato-observacoes">Observações</label>
+                        <textarea id="contrato-observacoes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('contrato-modal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Financeiro Modal -->
+    <div id="financeiro-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="financeiro-modal-title">Nova Transação</h3>
+                <button class="close-btn" onclick="closeModal('financeiro-modal')">&times;</button>
+            </div>
+            <form id="financeiro-form">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="financeiro-descricao">Descrição *</label>
+                        <input type="text" id="financeiro-descricao" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="financeiro-valor">Valor *</label>
+                        <input type="number" id="financeiro-valor" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="financeiro-data">Data *</label>
+                        <input type="date" id="financeiro-data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="financeiro-tipo">Tipo *</label>
+                        <select id="financeiro-tipo" required>
+                            <option value="Receita">Receita</option>
+                            <option value="Despesa">Despesa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="financeiro-categoria">Categoria</label>
+                        <select id="financeiro-categoria">
+                            <option value="Diárias">Diárias</option>
+                            <option value="Manutenção">Manutenção</option>
+                            <option value="Combustível">Combustível</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('financeiro-modal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Modal de Confirmação -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirm-modal-title">Confirmar Exclusão</h3>
+                <button class="close-btn" data-action="close-confirm">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-modal-message">Tem certeza que deseja excluir este item?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-action="cancel-confirm">Cancelar</button>
+                <button type="button" class="btn btn-danger" data-action="confirm-delete">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Input for Backup Restore -->
+    <input type="file" id="backup-file-input" accept=".json" style="display: none;">
+
+    <script src="script.js"></script>
+</body>
+</html>
