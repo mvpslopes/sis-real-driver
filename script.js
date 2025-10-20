@@ -1659,6 +1659,9 @@ class SisRealDriver {
 
         modal.classList.add('show');
         console.log('✅ Modal de contrato aberto');
+        
+        // Configurar botões de atalho para duração
+        this.setupDurationShortcuts();
     }
 
     saveContrato() {
@@ -1702,8 +1705,8 @@ class SisRealDriver {
             return;
         }
 
-        if (!formData.duracao || ![30, 60, 90].includes(formData.duracao)) {
-            this.showMessage('Duração deve ser 30, 60 ou 90 dias!', 'error');
+        if (!formData.duracao || formData.duracao < 1 || formData.duracao > 365) {
+            this.showMessage('Duração do contrato deve ser entre 1 e 365 dias!', 'error');
             return;
         }
 
@@ -1908,6 +1911,26 @@ class SisRealDriver {
         });
         
         console.log('✅ Selects do modal de contrato populados');
+    }
+
+    setupDurationShortcuts() {
+        const shortcuts = document.querySelectorAll('.btn-duration-shortcut');
+        const duracaoInput = document.getElementById('contrato-duracao');
+        
+        shortcuts.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const days = parseInt(button.dataset.days);
+                duracaoInput.value = days;
+                duracaoInput.focus();
+                
+                // Feedback visual
+                button.style.background = 'rgba(30, 58, 138, 0.3)';
+                setTimeout(() => {
+                    button.style.background = '';
+                }, 200);
+            });
+        });
     }
 
     // Relatórios

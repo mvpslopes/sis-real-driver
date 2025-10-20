@@ -1020,6 +1020,30 @@ body {
     color: #666;
 }
 
+/* Botões de atalho para duração de contratos */
+.btn-duration-shortcut {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    background: rgba(30, 58, 138, 0.1);
+    color: #1e3a8a;
+    border: 1px solid rgba(30, 58, 138, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.btn-duration-shortcut:hover {
+    background: rgba(30, 58, 138, 0.2);
+    border-color: rgba(30, 58, 138, 0.5);
+    transform: translateY(-1px);
+}
+
+.btn-duration-shortcut:active {
+    transform: translateY(0);
+    background: rgba(30, 58, 138, 0.3);
+}
+
 /* Estilos para relatórios de veículos */
 .relatorio-veiculo {
     margin-bottom: 1.5rem;

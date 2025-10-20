@@ -705,13 +705,19 @@
                         <input type="date" id="contrato-data-inicio" required>
                     </div>
                     <div class="form-group">
-                        <label for="contrato-duracao">Duração do Contrato *</label>
-                        <select id="contrato-duracao" required>
-                            <option value="">Selecione a duração</option>
-                            <option value="30">30 dias</option>
-                            <option value="60">60 dias</option>
-                            <option value="90">90 dias</option>
-                        </select>
+                        <label for="contrato-duracao">Duração do Contrato (dias) *</label>
+                        <input type="number" id="contrato-duracao" min="1" max="365" step="1" required placeholder="Ex: 30, 60, 90, 120, 180, 365...">
+                        <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button type="button" class="btn-duration-shortcut" data-days="30">30 dias</button>
+                            <button type="button" class="btn-duration-shortcut" data-days="60">60 dias</button>
+                            <button type="button" class="btn-duration-shortcut" data-days="90">90 dias</button>
+                            <button type="button" class="btn-duration-shortcut" data-days="120">120 dias</button>
+                            <button type="button" class="btn-duration-shortcut" data-days="180">180 dias</button>
+                            <button type="button" class="btn-duration-shortcut" data-days="365">1 ano</button>
+                        </div>
+                        <small style="color: #666; font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+                            Digite o número de dias do contrato (1 a 365 dias) ou clique nos atalhos acima
+                        </small>
                     </div>
                     <div class="form-group">
                         <label for="contrato-valor-mensal">Valor Mensal (R$) *</label>
