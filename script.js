@@ -2135,8 +2135,12 @@ class SisRealDriver {
         const semanaFiltro = document.getElementById('relatorio-semana-semanal').value;
         
         console.log('🔄 Atualizando relatório semanal...');
-        console.log('👤 Motorista ID selecionado:', motoristaId);
+        console.log('👤 Motorista ID selecionado:', motoristaId, 'tipo:', typeof motoristaId);
         console.log('📅 Filtro de semana:', semanaFiltro);
+        console.log('📊 Dados disponíveis:');
+        console.log('- Motoristas:', this.data.motoristas.length);
+        console.log('- Contratos:', this.data.contratos.length);
+        console.log('- Diárias:', this.data.diarias.length);
         
         if (!motoristaId) {
             console.log('⚠️ Nenhum motorista selecionado');
@@ -2150,12 +2154,23 @@ class SisRealDriver {
         
         console.log('📅 Período selecionado:', dataInicio, 'até', dataFim);
         
+        // Verificar se o motorista existe
+        const motorista = this.data.motoristas.find(m => m.id === parseInt(motoristaId));
+        if (!motorista) {
+            console.log('❌ Motorista não encontrado nos dados');
+            document.getElementById('relatorio-semanal-motorista').innerHTML = 
+                '<div class="empty-detail">Motorista não encontrado nos dados</div>';
+            return;
+        }
+        
+        console.log('✅ Motorista encontrado:', motorista.nome);
+        
         const relatorio = this.gerarRelatorioSemanalMotorista(motoristaId, dataInicio, dataFim);
         
         if (!relatorio) {
-            console.log('❌ Relatório não gerado - motorista não encontrado ou sem contratos');
+            console.log('❌ Relatório não gerado - sem contratos ou semanas');
             document.getElementById('relatorio-semanal-motorista').innerHTML = 
-                '<div class="empty-detail">Motorista não encontrado ou sem contratos cadastrados</div>';
+                '<div class="empty-detail">Motorista sem contratos cadastrados ou sem semanas calculadas</div>';
             return;
         }
         
@@ -2252,229 +2267,27 @@ class SisRealDriver {
         container.innerHTML = html;
     }
 
-    verificarECriarDadosExemplo() {
-        console.log('🔍 Verificando se há dados de exemplo...');
-        console.log('📊 Estado atual dos dados:');
-        console.log('- Motoristas:', this.data.motoristas.length);
-        console.log('- Contratos:', this.data.contratos.length);
-        console.log('- Veículos:', this.data.veiculos.length);
-        console.log('- Diárias:', this.data.diarias.length);
-        
-        // Verificar se já existem dados
-        if (this.data.motoristas.length > 0 && this.data.contratos.length > 0) {
-            console.log('✅ Dados já existem, não criando exemplos');
-            return;
-        }
-        
-        console.log('⚠️ Dados insuficientes, criando exemplos...');
-        
-        console.log('📝 Criando dados de exemplo para demonstração...');
-        
-        // Criar motorista de exemplo
-        const motoristaExemplo = {
-            id: 1,
-            nome: 'João Silva',
-            cpf: '123.456.789-00',
-            telefone: '(11) 99999-9999',
-            endereco: 'Rua das Flores, 123',
-            dataCadastro: new Date().toISOString().split('T')[0]
-        };
-        
-        // Criar veículo de exemplo
-        const veiculoExemplo = {
-            id: 1,
-            marca: 'Chevrolet',
-            modelo: 'Agile',
-            placa: 'ABC-1234',
-            ano: 2020,
-            cor: 'Branco',
-            status: 'Ativo',
-            dataCadastro: new Date().toISOString().split('T')[0]
-        };
-        
-        // Criar contrato de exemplo
-        const contratoExemplo = {
-            id: 1,
-            motoristaId: 1,
-            veiculoId: 1,
-            dataInicio: '2024-10-14',
-            dataVencimento: '2025-10-14',
-            duracao: 365,
-            valorMensal: 2000,
-            valorSemanal: 500,
-            valorDiario: 100,
-            status: 'Ativo',
-            observacoes: 'Contrato de exemplo'
-        };
-        
-        // Criar diárias de exemplo
-        const diariasExemplo = [
-            {
-                id: 1,
-                motoristaId: 1,
-                veiculoId: 1,
-                data: '2024-10-15',
-                valor: 100,
-                status: 'Pago'
-            },
-            {
-                id: 2,
-                motoristaId: 1,
-                veiculoId: 1,
-                data: '2024-10-16',
-                valor: 100,
-                status: 'Pago'
-            },
-            {
-                id: 3,
-                motoristaId: 1,
-                veiculoId: 1,
-                data: '2024-10-17',
-                valor: 100,
-                status: 'Pendente'
-            }
-        ];
-        
-        // Adicionar aos dados
-        this.data.motoristas.push(motoristaExemplo);
-        this.data.veiculos.push(veiculoExemplo);
-        this.data.contratos.push(contratoExemplo);
-        this.data.diarias.push(...diariasExemplo);
-        
-        // Salvar dados
-        this.saveData();
-        
-        console.log('✅ Dados de exemplo criados com sucesso');
-        
-        // Recarregar o setup do relatório semanal
-        setTimeout(() => {
-            this.setupRelatorioSemanal();
-        }, 100);
-    }
 
-    // Função para forçar criação de dados de exemplo
-    criarDadosExemploForcado() {
-        console.log('🔧 Forçando criação de dados de exemplo...');
+    // Função para recarregar dados reais
+    recarregarDadosReais() {
+        console.log('🔄 Recarregando dados reais...');
         console.log('📊 Estado atual dos dados REAIS:');
         console.log('- Motoristas reais:', this.data.motoristas.length);
         console.log('- Contratos reais:', this.data.contratos.length);
         console.log('- Veículos reais:', this.data.veiculos.length);
         console.log('- Diárias reais:', this.data.diarias.length);
         
-        // Se já existem dados reais, não criar fictícios
-        if (this.data.motoristas.length > 0 || this.data.contratos.length > 0) {
-            console.log('✅ Dados reais já existem! Recarregando relatório...');
-            this.setupRelatorioSemanal();
-            return;
-        }
+        // Recarregar dados do localStorage
+        this.loadData();
         
-        console.log('⚠️ Nenhum dado real encontrado, criando dados de exemplo...');
-        
-        // Limpar dados existentes se necessário
-        this.data.motoristas = [];
-        this.data.veiculos = [];
-        this.data.contratos = [];
-        this.data.diarias = [];
-        
-        // Criar motorista de exemplo
-        const motoristaExemplo = {
-            id: 1,
-            nome: 'João Silva',
-            cpf: '123.456.789-00',
-            telefone: '(11) 99999-9999',
-            endereco: 'Rua das Flores, 123',
-            dataCadastro: new Date().toISOString().split('T')[0]
-        };
-        
-        // Criar veículo de exemplo
-        const veiculoExemplo = {
-            id: 1,
-            marca: 'Chevrolet',
-            modelo: 'Agile',
-            placa: 'ABC-1234',
-            ano: 2020,
-            cor: 'Branco',
-            status: 'Ativo',
-            dataCadastro: new Date().toISOString().split('T')[0]
-        };
-        
-        // Criar contrato de exemplo
-        const contratoExemplo = {
-            id: 1,
-            motoristaId: 1,
-            veiculoId: 1,
-            dataInicio: '2024-10-14',
-            dataVencimento: '2025-10-14',
-            duracao: 365,
-            valorMensal: 2000,
-            valorSemanal: 500,
-            valorDiario: 100,
-            status: 'Ativo',
-            observacoes: 'Contrato de exemplo'
-        };
-        
-        // Criar diárias de exemplo
-        const diariasExemplo = [
-            {
-                id: 1,
-                motoristaId: 1,
-                veiculoId: 1,
-                data: '2024-10-15',
-                valor: 100,
-                status: 'Pago'
-            },
-            {
-                id: 2,
-                motoristaId: 1,
-                veiculoId: 1,
-                data: '2024-10-16',
-                valor: 100,
-                status: 'Pago'
-            },
-            {
-                id: 3,
-                motoristaId: 1,
-                veiculoId: 1,
-                data: '2024-10-17',
-                valor: 100,
-                status: 'Pendente'
-            }
-        ];
-        
-        // Adicionar aos dados
-        this.data.motoristas.push(motoristaExemplo);
-        this.data.veiculos.push(veiculoExemplo);
-        this.data.contratos.push(contratoExemplo);
-        this.data.diarias.push(...diariasExemplo);
-        
-        // Salvar dados
-        this.saveData();
-        
-        console.log('✅ Dados de exemplo criados com sucesso');
-        console.log('📊 Dados após criação:');
+        console.log('📊 Dados após recarregamento:');
         console.log('- Motoristas:', this.data.motoristas.length);
         console.log('- Contratos:', this.data.contratos.length);
         console.log('- Veículos:', this.data.veiculos.length);
         console.log('- Diárias:', this.data.diarias.length);
         
-        // Verificar se os dados foram salvos no localStorage
-        const dadosSalvos = localStorage.getItem('sisRealDriver');
-        console.log('💾 Dados salvos no localStorage:', dadosSalvos ? 'Sim' : 'Não');
-        if (dadosSalvos) {
-            const dadosParseados = JSON.parse(dadosSalvos);
-            console.log('📊 Dados no localStorage:');
-            console.log('- Motoristas:', dadosParseados.motoristas?.length || 0);
-            console.log('- Contratos:', dadosParseados.contratos?.length || 0);
-        }
-        
-        // Recarregar dados do localStorage
-        this.loadData();
-        
         // Recarregar o setup do relatório semanal
-        setTimeout(() => {
-            console.log('🔄 Recarregando setup após criação de dados...');
-            this.setupRelatorioSemanal();
-        }, 200);
+        this.setupRelatorioSemanal();
     }
 
     definirPeriodoCompleto() {
@@ -2496,10 +2309,12 @@ class SisRealDriver {
         // Encontrar o contrato mais antigo do motorista
         const contratosMotorista = this.data.contratos.filter(c => c.motoristaId === motoristaIdNum);
         console.log('📋 Contratos encontrados para o motorista:', contratosMotorista.length);
-        console.log('📋 Contratos disponíveis:', this.data.contratos.map(c => ({ id: c.id, motoristaId: c.motoristaId, tipo: typeof c.motoristaId })));
+        console.log('📋 Contratos disponíveis:', this.data.contratos.map(c => ({ id: c.id, motoristaId: c.motoristaId, tipo: typeof c.motoristaId, dataInicio: c.dataInicio })));
         
         if (contratosMotorista.length === 0) {
             console.log('⚠️ Nenhum contrato encontrado para o motorista');
+            console.log('🔍 Procurando contratos com motoristaId:', motoristaIdNum);
+            console.log('🔍 Todos os contratos:', this.data.contratos);
             return [];
         }
 
