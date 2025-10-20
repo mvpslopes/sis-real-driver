@@ -2423,10 +2423,24 @@ class SisRealDriver {
         console.log('- Veículos:', this.data.veiculos.length);
         console.log('- Diárias:', this.data.diarias.length);
         
+        // Verificar se os dados foram salvos no localStorage
+        const dadosSalvos = localStorage.getItem('sisRealDriver');
+        console.log('💾 Dados salvos no localStorage:', dadosSalvos ? 'Sim' : 'Não');
+        if (dadosSalvos) {
+            const dadosParseados = JSON.parse(dadosSalvos);
+            console.log('📊 Dados no localStorage:');
+            console.log('- Motoristas:', dadosParseados.motoristas?.length || 0);
+            console.log('- Contratos:', dadosParseados.contratos?.length || 0);
+        }
+        
+        // Recarregar dados do localStorage
+        this.loadData();
+        
         // Recarregar o setup do relatório semanal
         setTimeout(() => {
+            console.log('🔄 Recarregando setup após criação de dados...');
             this.setupRelatorioSemanal();
-        }, 100);
+        }, 200);
     }
 
     definirPeriodoCompleto() {
@@ -2439,11 +2453,16 @@ class SisRealDriver {
 
     // Função para calcular as semanas de um motorista baseado na data de início do contrato
     calcularSemanasMotorista(motoristaId) {
-        console.log('📅 Calculando semanas para motorista ID:', motoristaId);
+        console.log('📅 Calculando semanas para motorista ID:', motoristaId, 'tipo:', typeof motoristaId);
+        
+        // Converter para número se necessário
+        const motoristaIdNum = parseInt(motoristaId);
+        console.log('🔢 Motorista ID convertido para cálculo:', motoristaIdNum);
         
         // Encontrar o contrato mais antigo do motorista
-        const contratosMotorista = this.data.contratos.filter(c => c.motoristaId === motoristaId);
+        const contratosMotorista = this.data.contratos.filter(c => c.motoristaId === motoristaIdNum);
         console.log('📋 Contratos encontrados para o motorista:', contratosMotorista.length);
+        console.log('📋 Contratos disponíveis:', this.data.contratos.map(c => ({ id: c.id, motoristaId: c.motoristaId, tipo: typeof c.motoristaId })));
         
         if (contratosMotorista.length === 0) {
             console.log('⚠️ Nenhum contrato encontrado para o motorista');
@@ -2485,18 +2504,24 @@ class SisRealDriver {
 
     // Função para gerar relatório semanal por motorista
     gerarRelatorioSemanalMotorista(motoristaId, semanaInicio, semanaFim) {
-        console.log('🔍 Gerando relatório semanal para motorista ID:', motoristaId);
+        console.log('🔍 Gerando relatório semanal para motorista ID:', motoristaId, 'tipo:', typeof motoristaId);
+        console.log('📊 Todos os motoristas:', this.data.motoristas);
+        console.log('📋 Todos os contratos:', this.data.contratos);
         
-        const motorista = this.data.motoristas.find(m => m.id === motoristaId);
+        // Converter motoristaId para número se necessário
+        const motoristaIdNum = parseInt(motoristaId);
+        console.log('🔢 Motorista ID convertido:', motoristaIdNum);
+        
+        const motorista = this.data.motoristas.find(m => m.id === motoristaIdNum);
         if (!motorista) {
-            console.log('❌ Motorista não encontrado com ID:', motoristaId);
-            console.log('📊 Motoristas disponíveis:', this.data.motoristas.map(m => ({ id: m.id, nome: m.nome })));
+            console.log('❌ Motorista não encontrado com ID:', motoristaIdNum);
+            console.log('📊 Motoristas disponíveis:', this.data.motoristas.map(m => ({ id: m.id, tipo: typeof m.id, nome: m.nome })));
             return null;
         }
         
         console.log('✅ Motorista encontrado:', motorista.nome);
 
-        const semanas = this.calcularSemanasMotorista(motoristaId);
+        const semanas = this.calcularSemanasMotorista(motoristaIdNum);
         const semanasFiltradas = semanas.filter(semana => {
             const dataInicio = new Date(semanaInicio);
             const dataFim = new Date(semanaFim);
@@ -2511,7 +2536,7 @@ class SisRealDriver {
         const relatorioSemanas = semanasFiltradas.map(semana => {
             // Filtrar diárias da semana
             const diariasSemana = this.data.diarias.filter(diaria => {
-                if (diaria.motoristaId !== motoristaId) return false;
+                if (diaria.motoristaId !== motoristaIdNum) return false;
                 const dataDiaria = new Date(diaria.data);
                 const inicioSemana = new Date(semana.inicio);
                 const fimSemana = new Date(semana.fim);
